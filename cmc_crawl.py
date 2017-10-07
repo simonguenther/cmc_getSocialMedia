@@ -1,20 +1,15 @@
 import urllib
 import sys
 import re
+import json
+import codecs
 from bs4 import BeautifulSoup
+from Helper import get_html
+from crawlWebsite import Crawler
 
 URL_cmc = "https://coinmarketcap.com/all/views/all/"
 baseURL = "https://coinmarketcap.com"
-
-"""
-    get HTML from link
-"""
-def get_html(url):
-    try:
-        return urllib.urlopen(url).read()
-    except:
-        print("Error", sys.exc_info()[0])
-        raise
+number_of_coins = 1000
 
 """
     Limit determines how many coin-links are retrieved
@@ -43,6 +38,7 @@ def get_all_website_links_from_coinpage(content):
     for coin in content:
         print "Retrieving Website: " + coin
         html = get_html(content[coin])
+        
         soup = BeautifulSoup(html, "lxml")
         pattern = re.compile("Website[\s0-9]*")
         allSites = []
@@ -55,10 +51,19 @@ def get_all_website_links_from_coinpage(content):
         allWebsiteLinks[coin] = allSites
     return allWebsiteLinks
 
+"""
+    Save Doctopmary to File
+
+"""
+def save_to_file(path, dump):
+	with codecs.open(path,'w','utf-8') as f:
+		f.write(json.dumps(dump, ensure_ascii= False, indent=2, encoding = "utf-8"))
 
 html = get_html(URL_cmc)
-coinlinks = get_all_coin_links(html,3)
-get_all_website_links_from_coinpage(coinlinks)
+coinlinks = get_all_coin_links(html,number_of_coins)
+dict_links = get_all_website_links_from_coinpage(coinlinks)
+save_to_file("coin_link_list.json", dict_links)
+    
 
 
 
